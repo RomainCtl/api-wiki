@@ -7,15 +7,14 @@ class Register {
 
     private function __construct(){
         /**
-         * @brief constructor
+         * Constructor
          */
-        $this->register_file = "./data/register.json";
-        $content = file_get_contents($this->register_file);
+        $this->register_file = "../data/register.json";
     }
 
     public static function getInstance(){
         /**
-         * @brief Function specific to Singleton pattern
+         * Function specific to Singleton pattern
          * @return object instance
          */
         if(is_null(self::$register))
@@ -25,7 +24,7 @@ class Register {
 
     public function write(string $content){
         /**
-         * @brief Write content on register file
+         * Write content on register file
          * @param string $content to write
          * @return array(true or false, message)
          */
@@ -41,7 +40,7 @@ class Register {
 
     public function read(){
         /**
-         * @brief Read the register file
+         * Read the register file
          * @return false if file not fond
          * @return json_decode
          */
