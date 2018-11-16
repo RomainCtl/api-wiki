@@ -1,3 +1,4 @@
 {
-    "max_child": 10
+    "max_child": 10,
+    "father_file": "WIKI-father"
 }
