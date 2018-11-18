@@ -9,7 +9,7 @@ class Config {
         /**
          * Constructor
          */
-        $this->config_file = "./src/utils/config.json";
+        $this->config_file = "../src/utils/config.json";
     }
 
     public static function getInstance(){
@@ -35,7 +35,7 @@ class Config {
 
         $res = array();
         foreach ($args as $a){
-            if (!in_array($a, $json)) return false;
+            if (!array_key_exists($a, $json)) return false;
             $res[$a] = $json[$a];
         }
         return $res;

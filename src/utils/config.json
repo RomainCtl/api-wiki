@@ -1,4 +1,6 @@
 {
     "max_child": 10,
-    "father_file": "WIKI-father"
+    "data_path": "../data/",
+    "father_file": "WIKI-father",
+    "father_default_content": "# Welcome to Romain's Wiki Home !\n\n> <Inserer des choses ici>\n"
 }
