@@ -3,38 +3,49 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-require "./src/resources/File.php";
+require "../src/resources/File.php";
 
 // Routes
 
-$app->get('/[{name}]', function (Request $request, Response $response, array $args) {
-    // Sample log message
-    $this->logger->info("Slim-Skeleton '/' route");
+// $app->get('/[{name}]', function (Request $request, Response $response, array $args) {
+//     // Sample log message
+//     $this->logger->info("Slim-Skeleton '/' route");
 
-    // Render index view
-    return $this->renderer->render($response, 'index.phtml', $args);
+//     // Render index view
+//     return $this->renderer->render($response, 'index.phtml', $args);
+// });
+
+// GET File
+$app->get('/file', function(Request $request, Response $response){
+    $file = new File();
+    return call_user_func_array(array($this->response, "withJson"), $file->get("home"));
+});
+$app->get('/file/{filename_path}', function(Request $request, Response $response, array $args){
+    $file = new File();
+    $this->logger->info($args['filename_path']);
+    return call_user_func_array(array($this->response, "withJson"), $file->get($args['filename_path']));
+});
+$app->get('/file/{filename_path}/childs/{nb}', function(Request $request, Response $response, array $args){
+    $file = new File();
+    return call_user_func_array(array($this->response, "withJson"), $file->get($args['filename_path'], $args['nb']));
 });
 
-$app->get('/api/file', function(Request $request, Response $response, array $args){
-    $file = new File();
-    return $this->response->withJson($file->get("WIKI-father"));
-});
-$app->get('/api/file/{filename}', function(Request $request, Response $response, array $args){
-    $file = new File();
-    return $this->response->withJson($file->get($args['filename']));
-});
-$app->get('/api/file/{filename}/childs/{nb}', function(Request $request, Response $response, array $args){
-    $file = new File();
-    return $this->response->withJson($file->get($args['filename'], $args['nb']));
-});
-
-$app->post('/api/file', function(Request $request, Response $response){
+// POST File
+$app->post('/file', function(Request $request, Response $response){
     $input = $request->getParsedBody();
-    // $this->logger->addInfo(var_dump($input));
     $file = new File();
-    return $this->response->withJson($file->post($input));
+    return call_user_func_array(array($this->response, "withJson"), $file->post($input));
 });
 
-$app->put('/api/file/{filename}', function(Request $request, Response $response, array $args){});
+// PUT File
+$app->put('/file/{filename_path}', function(Request $request, Response $response, array $args){
+    $input = $request->getParsedBody();
+    $file = new File();
+    return $this->response->withJson($file->put($args['filename_path'], $input));
+});
 
-$app->delete('/api/file/{filename}', function(Request $request, Response $response, array $args){});
+// DELETE File
+$app->delete('/file/{filename_path}', function(Request $request, Response $response, array $args){
+    $file = new File();
+    return $this->response->withJson($file->delete($args['filename_path']));
+});
