@@ -14,7 +14,7 @@ class File {
 
     public function get(string $filename_path, int $nb=3){
         $content = $this->register->read();
-        $path = explode("/",$filename_path);
+        $path = explode("/",strtolower($filename_path));
         $last = $content;
         foreach ($path as $p){
             if (array_key_exists($p, $last))
