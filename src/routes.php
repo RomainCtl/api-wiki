@@ -41,11 +41,11 @@ $app->post('/file', function(Request $request, Response $response){
 $app->put('/file/{filename_path}', function(Request $request, Response $response, array $args){
     $input = $request->getParsedBody();
     $file = new File();
-    return $this->response->withJson($file->put($args['filename_path'], $input));
+    return call_user_func_array(array($this->response, "withJson"), $file->put($args['filename_path'], $input));
 });
 
 // DELETE File
 $app->delete('/file/{filename_path}', function(Request $request, Response $response, array $args){
     $file = new File();
-    return $this->response->withJson($file->delete($args['filename_path']));
+    return call_user_func_array(array($this->response, "withJson"), $file->delete($args['filename_path']));
 });
