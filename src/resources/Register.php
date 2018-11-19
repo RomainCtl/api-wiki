@@ -30,7 +30,7 @@ class Register {
         /**
          * Write content on register file
          * @param array $content to write
-         * @return boolean true or false
+         * @return bool true or false
          */
         $fp = fopen($this->register_file, 'w');
         return $fp && fwrite($fp, json_encode($content)) && fclose($fp);

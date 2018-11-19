@@ -7,14 +7,6 @@ require "../src/resources/File.php";
 
 // Routes
 
-// $app->get('/[{name}]', function (Request $request, Response $response, array $args) {
-//     // Sample log message
-//     $this->logger->info("Slim-Skeleton '/' route");
-
-//     // Render index view
-//     return $this->renderer->render($response, 'index.phtml', $args);
-// });
-
 // GET File
 $app->get('/file', function(Request $request, Response $response){
     $file = new File();
