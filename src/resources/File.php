@@ -65,7 +65,7 @@ class File {
             )
         );
         try {
-            $content = $this->add_child($content, strtolower($data['name']), $file, $path, function($f, $me, $name){
+            $content = $this->add_child($content, strtolower($data['name']), $file, $path, function($f, $me, $name, $last_name){
                 if (array_key_exists($name, $f)) throw new OverflowException("Error ! File already exist !", 409);
                 $f[$name] = $me;
                 return $f;
@@ -110,29 +110,20 @@ class File {
         $npath = $path;
         $npath[count($npath)-1] = strtolower($data['name']);
         $file['path'] = join("/", $npath);
+        $last_name = $path[count($path)-1];
         unset($path[count($path)-1]);
 
         $content = $this->register->read();
         try {
-            if (strtolower($data['name']) != strtolower($path[count($path)-1])) {
-                $content = $this->add_child($content, strtolower($data['name']), $file, $path, function($f, $me, $name){
-                    unset($me['content']);
-                    $lp = explode("/",$me['path']);
-                    $tmpme = $f[$lp[count($lp)-1]];
-                    $tmpme['__me__']['last_edit_date'] = $me['last_edit_date'];
-                    unset($f[$lp[count($lp)-1]]);
-                    unset($tmpme['path']);
-                    $f[$name] = $tmpme;
-                    return $f;
-                });
-            } else {
-                $content = $this->add_child($content, strtolower($data['name']), $file, $path, function($f, $me, $name){
-                    unset($me['content']);
-                    unset($me['path']);
-                    $f[$name] = $me;
-                    return $f;
-                });
-            }
+            $content = $this->add_child($content, strtolower($data['name']), $file, $path, function($f, $me, $name, $last_name){
+                unset($me['content']);
+                $tmpme = $f[$last_name];
+                $tmpme['__me__']['last_edit_date'] = $me['last_edit_date'];
+                unset($f[$last_name]);
+                unset($tmpme['path']);
+                $f[$name] = $tmpme;
+                return $f;
+            }, $last_name);
         } catch (Exception $e) {
             return array(array("message"=> $e->getMessage()), $e->getCode());
         }
@@ -160,7 +151,7 @@ class File {
         $name = $path[count($path)-1];
         unset($path[count($path)-1]);
         try {
-            $content = $this->add_child($content, $name, $file, $path, function($f, $me, $name){
+            $content = $this->add_child($content, $name, $file, $path, function($f, $me, $name, $last_name){
                 if (count($f[$name]) > 1) throw new LengthException("Error ! File has some childs !", 403);
                 unset($f[$name]);
                 return $f;
@@ -176,7 +167,7 @@ class File {
         return array(array("message"=> "Successfull delete !"), 205);
     }
 
-    private function add_child(array $f, string $name, array $child, array $path, $func) {
+    private function add_child(array $f, string $name, array $child, array $path, $func, string $last_name = null) {
         /**
          * Recursive function to make action on child
          * @param array $f register content
@@ -184,6 +175,7 @@ class File {
          * @param array $child '__me__' child element
          * @param array $path list of parents
          * @param function $func action todo
+         * @param string $last_name name to change
          *
          * @throws InvalidArgumentException if path var has any unknown element
          *
@@ -192,9 +184,9 @@ class File {
         $path0 = array_shift($path);
         if (!array_key_exists($path0, $f)) throw new InvalidArgumentException("Error ! Unknown path !", 404);
         if (count($path) == 0)
-            $f[$path0] = $func($f[$path0], $child, $name);
+            $f[$path0] = $func($f[$path0], $child, $name, $last_name);
         else
-            $f[$path0] = $this->add_child($f[$path0], $name, $child, $path, $func);
+            $f[$path0] = $this->add_child($f[$path0], $name, $child, $path, $last_name, $func);
         return $f;
     }
 
