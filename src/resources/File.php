@@ -22,7 +22,8 @@ class File {
          * get content of file
          *
          * @param string $filename_path path to file
-         * @param int $nb number of child returned @todo
+         * @param int $nb number of child returned (-1 to get all)
+         * @param bool $unset_filename true if it need to delete filename on return
          *
          * @return array(content, status_code)
          */
@@ -36,6 +37,29 @@ class File {
         }
         $last["__me__"]["path"] = $filename_path;
         return $this->read($last["__me__"], $unset_filename);
+    }
+
+    public function get_list(string $filename_path){
+        /**
+         * get all child path from $filename_path
+         *
+         * @param string $filename_path
+         *
+         * @return array(content, status_code)
+         */
+        $content = $this->register->read();
+        $path = explode("/",strtolower($filename_path));
+        $last = $content;
+        foreach ($path as $p){
+            if (array_key_exists($p, $last))
+                $last = $last[$p];
+            else return array(array("message" => "Error ! Unknown file name"), 404);
+        }
+        $res = $last['__me__'];
+        $res["path"] = $filename_path;
+        $res['child_paths'] = $this->get_path($last, $filename_path);
+        unset($res["filename"]);
+        return array($res, 200);
     }
 
     public function post(array $data){
@@ -186,8 +210,29 @@ class File {
         if (count($path) == 0)
             $f[$path0] = $func($f[$path0], $child, $name, $last_name);
         else
-            $f[$path0] = $this->add_child($f[$path0], $name, $child, $path, $last_name, $func);
+            $f[$path0] = $this->add_child($f[$path0], $name, $child, $path, $func, $last_name);
         return $f;
+    }
+
+    private function get_path(array $f, string $par_path){
+        /**
+         * Get all path from dict
+         *
+         * @param array $f object where we get path (keys)
+         * @param string father's path
+         *
+         * @return array wit all childs path
+         */
+        $res = array();
+        $keys = array_keys($f);
+        foreach ($keys as $k) {
+            if ($k != "__me__"){
+                array_push($res, $par_path."/".$k);
+                if (count(array_keys($f[$k])) > 1)
+                    $res =array_merge($res, $this->get_path($f[$k], $par_path."/".$k));
+            }
+        }
+        return $res;
     }
 
     private function write(string $name, string $content, string $mode = "w"){

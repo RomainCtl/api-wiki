@@ -9,46 +9,32 @@ require "../src/utils/main.php";
 
 // GET File
 $app->get('/file', function(Request $request, Response $response){
-    return call_user_func_array(
-        array($this->response, "withJson"),
-        api_logger($this, "GET", array("home"))
-    );
+    return create_response_file($this, "GET", array('home'));
 });
 $app->get('/file/{filename_path}', function(Request $request, Response $response, array $args){
-    return call_user_func_array(
-        array($this->response, "withJson"),
-        api_logger($this, "GET", $args)
-    );
+    return create_response_file($this, "GET", $args);
 });
 $app->get('/file/{filename_path}/childs/{nb}', function(Request $request, Response $response, array $args){
-    return call_user_func_array(
-        array($this->response, "withJson"),
-        api_logger($this, "GET", $args)
-    );
+    return create_response_file($this, "GET", $args);
+});
+$app->get('/file/list/{filename_path}', function(Request $request, Response $response, array $args){
+    return create_response_file($this, "GET_LIST", $args);
 });
 
 // POST File
 $app->post('/file', function(Request $request, Response $response){
     $input = $request->getParsedBody();
-    return call_user_func_array(
-        array($this->response, "withJson"),
-        api_logger($this, "POST", array($input))
-    );
+    return create_response_file($this, "POST", array($input));
 });
 
 // PUT File
 $app->put('/file/{filename_path}', function(Request $request, Response $response, array $args){
     $input = $request->getParsedBody();
-    return call_user_func_array(
-        array($this->response, "withJson"),
-        api_logger($this, "PUT", array($args['filename_path'], $input))
-    );
+    return create_response_file($this, "PUT", array($args['filename_path'], $input));
 });
 
 // DELETE File
 $app->delete('/file/{filename_path}', function(Request $request, Response $response, array $args){
-    return call_user_func_array(
-        array($this->response, "withJson"),
-        api_logger($this, "DELETE", $args)
-    );
+    return create_response_file($this, "DELETE", $args);
+
 });
