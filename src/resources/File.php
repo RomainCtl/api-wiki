@@ -3,30 +3,35 @@
 require "../src/resources/Register.php";
 require "../src/utils/main.php";
 
+/**
+ * File
+ *
+ * Object to execute api routes about files.
+ */
 class File {
 
     private $register, $config, $data_path;
 
+    /**
+     * Constructor
+     * Get Config & Register Instance and init $data_path var
+     */
     public function __construct(){
-        /**
-         * Constructor
-         * Get Config & Register Instance and init $data_path var
-         */
         $this->register = Register::getInstance();
         $this->config = Config::getInstance();
         $this->data_path = $this->config->get(array("data_path"))['data_path'];
     }
 
+    /**
+     * get content of file
+     *
+     * @param string $filename_path path to file
+     * @param int $nb number of child returned (-1 to get all)
+     * @param bool $unset_filename true if it need to delete filename on return
+     *
+     * @return array(content, status_code)
+     */
     public function get(string $filename_path, int $nb=3, bool $unset_filename=true){
-        /**
-         * get content of file
-         *
-         * @param string $filename_path path to file
-         * @param int $nb number of child returned (-1 to get all)
-         * @param bool $unset_filename true if it need to delete filename on return
-         *
-         * @return array(content, status_code)
-         */
         $content = $this->register->read();
         $path = explode("/",strtolower($filename_path));
         $last = $content;
@@ -39,14 +44,14 @@ class File {
         return $this->read($last["__me__"], $unset_filename);
     }
 
+    /**
+     * get all child path from $filename_path
+     *
+     * @param string $filename_path
+     *
+     * @return array(content, status_code)
+     */
     public function get_list(string $filename_path){
-        /**
-         * get all child path from $filename_path
-         *
-         * @param string $filename_path
-         *
-         * @return array(content, status_code)
-         */
         $content = $this->register->read();
         $path = explode("/",strtolower($filename_path));
         $last = $content;
@@ -62,14 +67,14 @@ class File {
         return array($res, 200);
     }
 
+    /**
+     * Create file, insert into register and create .md
+     *
+     * @param array $data with name : filename & parents : parents path
+     *
+     * @return array(content, status_code)
+     */
     public function post(array $data){
-        /**
-         * Create file, insert into register and create .md
-         *
-         * @param array $data with name : filename & parents : parents path
-         *
-         * @return array(content, status_code)
-         */
         $required = array("name", "parents");
         if (!check_input($required, array_keys($data))) return array(array("message"=> "Bad attribute"), 400);
 
@@ -108,15 +113,15 @@ class File {
         }
     }
 
+    /**
+     * Edit md file content or file name
+     *
+     * @param string $filename_path path
+     * @param array $data with content & name attribute
+     *
+     * @return array(content, status_code)
+     */
     public function put(string $filename_path, array $data){
-        /**
-         * Edit md file content or file name
-         *
-         * @param string $filename_path path
-         * @param array $data with content & name attribute
-         *
-         * @return array(content, status_code)
-         */
         $required = array("content", "name");
         if (!check_input($required, array_keys($data))) return array(array("message"=> "Bad attribute"), 400);
 
@@ -158,14 +163,14 @@ class File {
         return array($file, 200);
     }
 
+    /**
+     * Delete file
+     *
+     * @param string $filename_path path
+     *
+     * @return array(content, status_code)
+     */
     public function delete(string $filename_path){
-        /**
-         * Delete file
-         *
-         * @param string $filename_path path
-         *
-         * @return array(content, status_code)
-         */
         $file = $this->get($filename_path, 0, false)[0];
 
         if (!file_exists($this->data_path.$file['filename'].".md")) return array(array("message"=> "Error, unknown file name"), 404);
@@ -191,20 +196,20 @@ class File {
         return array(array("message"=> "Successfull delete !"), 205);
     }
 
+    /**
+     * Recursive function to make action on child
+     * @param array $f register content
+     * @param string $name name
+     * @param array $child '__me__' child element
+     * @param array $path list of parents
+     * @param function $func action todo
+     * @param string $last_name name to change
+     *
+     * @throws InvalidArgumentException if path var has any unknown element
+     *
+     * @return array $f register content with new child
+     */
     private function add_child(array $f, string $name, array $child, array $path, $func, string $last_name = null) {
-        /**
-         * Recursive function to make action on child
-         * @param array $f register content
-         * @param string $name name
-         * @param array $child '__me__' child element
-         * @param array $path list of parents
-         * @param function $func action todo
-         * @param string $last_name name to change
-         *
-         * @throws InvalidArgumentException if path var has any unknown element
-         *
-         * @return array $f register content with new child
-         */
         $path0 = array_shift($path);
         if (!array_key_exists($path0, $f)) throw new InvalidArgumentException("Error ! Unknown path !", 404);
         if (count($path) == 0)
@@ -214,15 +219,15 @@ class File {
         return $f;
     }
 
+    /**
+     * Get all path from dict
+     *
+     * @param array $f object where we get path (keys)
+     * @param string father's path
+     *
+     * @return array wit all childs path
+     */
     private function get_path(array $f, string $par_path){
-        /**
-         * Get all path from dict
-         *
-         * @param array $f object where we get path (keys)
-         * @param string father's path
-         *
-         * @return array wit all childs path
-         */
         $res = array();
         $keys = array_keys($f);
         foreach ($keys as $k) {
@@ -235,35 +240,35 @@ class File {
         return $res;
     }
 
+    /**
+     * Write content on file
+     * @param string $name filename
+     * @param string $content to write
+     * @return bool true or false
+     */
     private function write(string $name, string $content, string $mode = "w"){
-        /**
-         * Write content on file
-         * @param string $name filename
-         * @param string $content to write
-         * @return bool true or false
-         */
         $fp = fopen($this->data_path.$name.".md", $mode);
         return $fp && fwrite($fp, $content) && fclose($fp);
     }
 
+    /**
+     * Read file
+     * @param array $file file object
+     * @param bool $unset_filename
+     * @return false if file not fond
+     * @return array content
+     */
     private function read(array $file, $unset_filename=true){
-        /**
-         * Read file
-         * @param array $file file object
-         * @param bool $unset_filename
-         * @return false if file not fond
-         * @return array content
-         */
         $file['content'] = file_get_contents($this->data_path.$file["filename"].".md");
         if ($unset_filename) unset($file["filename"]);
         return (!$file['content']) ? array(array("message" => "Error ! Unknown file name"), 404) : array($file, 200);
     }
 
+    /**
+     * Generate file name id
+     * @return string
+     */
     private function generate_filename(){
-        /**
-         * Generate file name id
-         * @return string
-         */
         $chars = "abcdefghijklmnopqrstuvwxyz0123456789";
         return "WIKI-".date("Y-m-d")."-".substr(str_shuffle($chars), 0, 8);
     }
