@@ -26,12 +26,11 @@ class File {
      * get content of file
      *
      * @param string $filename_path path to file
-     * @param int $nb number of child returned (-1 to get all)
      * @param bool $unset_filename true if it need to delete filename on return
      *
      * @return array(content, status_code)
      */
-    public function get(string $filename_path, int $nb=3, bool $unset_filename=true){
+    public function get(string $filename_path, bool $unset_filename=true){
         $content = $this->register->read();
         $path = explode("/",strtolower($filename_path));
         $last = $content;
@@ -48,10 +47,12 @@ class File {
      * get all child path from $filename_path
      *
      * @param string $filename_path
+     * @param int $nb number of child returned
      *
      * @return array(content, status_code)
      */
-    public function get_list(string $filename_path){
+    public function get_list(string $filename_path, int $nb=NULL){
+        if (!isset($nb)) $nb = $this->config->get(array('max_child'))['max_child'];
         $content = $this->register->read();
         $path = explode("/",strtolower($filename_path));
         $last = $content;
@@ -62,7 +63,7 @@ class File {
         }
         $res = $last['__me__'];
         $res["path"] = $filename_path;
-        $res['child_paths'] = $this->get_path($last, $filename_path);
+        $res['child_paths'] = $this->get_path($last, $filename_path, $nb);
         unset($res["filename"]);
         return array($res, 200);
     }
@@ -125,7 +126,7 @@ class File {
         $required = array("content", "name");
         if (!check_input($required, array_keys($data))) return array(array("message"=> "Bad attribute"), 400);
 
-        $file = $this->get($filename_path, 0, false)[0];
+        $file = $this->get($filename_path, false)[0];
 
         if (!file_exists($this->data_path.$file['filename'].".md")) return array(array("message"=> "Error, unknown file name"), 404);
 
@@ -171,7 +172,7 @@ class File {
      * @return array(content, status_code)
      */
     public function delete(string $filename_path){
-        $file = $this->get($filename_path, 0, false)[0];
+        $file = $this->get($filename_path, false)[0];
 
         if (!file_exists($this->data_path.$file['filename'].".md")) return array(array("message"=> "Error, unknown file name"), 404);
 
@@ -224,17 +225,18 @@ class File {
      *
      * @param array $f object where we get path (keys)
      * @param string father's path
+     * @param int $nb number of child
      *
      * @return array wit all childs path
      */
-    private function get_path(array $f, string $par_path){
+    private function get_path(array $f, string $par_path, int $nb){
         $res = array();
         $keys = array_keys($f);
         foreach ($keys as $k) {
-            if ($k != "__me__"){
+            if ($nb > 0 && $k != "__me__"){
                 array_push($res, $par_path."/".$k);
                 if (count(array_keys($f[$k])) > 1)
-                    $res =array_merge($res, $this->get_path($f[$k], $par_path."/".$k));
+                    $res =array_merge($res, $this->get_path($f[$k], $par_path."/".$k, $nb-1));
             }
         }
         return $res;

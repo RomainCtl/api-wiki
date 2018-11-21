@@ -14,10 +14,10 @@ $app->get('/file', function(Request $request, Response $response){
 $app->get('/file/{filename_path}', function(Request $request, Response $response, array $args){
     return create_response_file($this, "GET", $args);
 });
-$app->get('/file/{filename_path}/childs/{nb}', function(Request $request, Response $response, array $args){
-    return create_response_file($this, "GET", $args);
-});
 $app->get('/file/list/{filename_path}', function(Request $request, Response $response, array $args){
+    return create_response_file($this, "GET_LIST", $args);
+});
+$app->get('/file/list/{filename_path}/limit/{nb}', function(Request $request, Response $response, array $args){
     return create_response_file($this, "GET_LIST", $args);
 });
 
@@ -36,5 +36,13 @@ $app->put('/file/{filename_path}', function(Request $request, Response $response
 // DELETE File
 $app->delete('/file/{filename_path}', function(Request $request, Response $response, array $args){
     return create_response_file($this, "DELETE", $args);
+});
 
+// Allow Cross Origin
+$app->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
