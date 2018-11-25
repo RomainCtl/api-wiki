@@ -141,7 +141,7 @@ class File {
         $npath[count($npath)-1] = strtolower($data['name']);
         $file['path'] = join("/", $npath);
         $last_name = $path[count($path)-1];
-        unset($path[count($path)-1]);
+        if (count($path) > 1) unset($path[count($path)-1]);
 
         $content = $this->register->read();
         try {
